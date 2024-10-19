@@ -1,34 +1,41 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostLink from "../../components/blog/PostLink.astro";
-import {Astro} from "astro/env";
+import {Post} from "../../types/Post";
+import {parseMarkdownToPost} from "../../utils/markdownParser";
 
 export const prerender = true;
 
-export async function getStaticPaths() {
-    const allPosts = await Astro.glob('../posts/*.md');
-    const uniqueTags = [...new Set(allPosts.flatMap((post) => post.frontmatter.tags))];
+type StaticPath = {
+    params: {tag: string},
+    props: {posts: Post[]}
+};
 
-    return uniqueTags.map((tag) => {
-        const filteredPosts = allPosts.filter((post) => post.frontmatter.tags.includes(tag));
+export async function getStaticPaths(): Promise<StaticPath[]> {
+    const glob = await Astro.glob('../posts/*.md');
+    const uniqueTags = [...new Set(glob.flatMap((post) => post.frontmatter.tags))] as string[];
+    const allPosts = glob.map((post) => parseMarkdownToPost(post)) as Post[];
+
+    return uniqueTags.map((tag: string) => {
+        const filteredPosts: Post[] = allPosts
+            .filter((post) => post.frontmatter.tags.includes(tag))
 
         return {
             params: {tag}, props: {posts: filteredPosts}
         }
     });
-
 }
 
 const {tag} = Astro.params;
 
 const { posts } = Astro.props;
-const filteredPosts = posts.filter((post) => post.frontmatter.tags?.includes(tag));
+const filteredPosts = posts.filter((post: Post) => post.frontmatter.tags?.includes(tag));
 
 ---
 <BaseLayout pageTitle={tag}>
     <p>Posts tagged with "{tag}"</p>
 
     <ul>
-        {filteredPosts.map((post) => <PostLink post={post} />)}
+        {filteredPosts.map((post: Post) => <PostLink post={post} />)}
     </ul>
 </BaseLayout>
