@@ -1,5 +1,3 @@
-import i18nKey from '@i18n/i18nKey'
-import { i18n } from '@i18n/translation'
 
 export function pathsEqual(path1: string, path2: string) {
   const normalizedPath1 = path1.replace(/^\/|\/$/g, '').toLowerCase()
@@ -17,7 +15,7 @@ export function getPostUrlBySlug(slug: string): string {
 }
 
 export function getCategoryUrl(category: string): string {
-  if (category === i18n(i18nKey.uncategorized))
+  if (category === 'Uncategorized')
     return url('/archive/category/uncategorized/')
   return url(`/archive/category/${category}/`)
 }
